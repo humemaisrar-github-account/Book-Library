@@ -1,21 +1,15 @@
 import { NextResponse } from "next/server";
+import { BOOKS_TABLE, BOOK_COLUMNS, getSupabase, isSupabaseConfigured } from "../../lib/supabase";
 import type { Book, BookInput } from "../../lib/types";
 
-// NOTE: data lives in memory, so it resets whenever the server restarts.
-// Swap this array for a database (Supabase, MongoDB, ...) when you want real persistence.
-let books: Book[] = [
-  { id: 1, title: "Read People Like a Book", author: "Patrick King", image: "/img1.jpg", available: true, genre: "Psychology", rating: 0 },
-  { id: 2, title: "To Kill a Mockingbird", author: "Harper Lee", image: "/img.3.jpg", available: true, genre: "Classic", rating: 0 },
-  { id: 3, title: "Normal People", author: "Sally Rooney", image: "/img2.jpg", available: true, genre: "Romance", rating: 0 },
-  { id: 4, title: "Animal Farm", author: "George Orwell", image: "/img.4.jpg", available: true, genre: "Classic", rating: 0 },
-  { id: 5, title: "Pride and Prejudice", author: "Jane Austen", image: "/img5.jpg", available: true, genre: "Romance", rating: 0 },
-  { id: 6, title: "The Great Gatsby", author: "F. Scott Fitzgerald", image: "/img6.jpg", available: true, genre: "Classic", rating: 0 },
-  { id: 7, title: "The Alchemist", author: "Paulo Coelho", image: "/img7.jpg", available: true, genre: "Adventure", rating: 0 },
-  { id: 8, title: "The Book Thief", author: "Markus Zusak", image: "/img8.jpg", available: true, genre: "Historical", rating: 0 },
-  { id: 9, title: "The Kite Runner", author: "Khaled Hosseini", image: "/img9.jpg", available: true, genre: "Fiction", rating: 0 },
-];
+// Books come from Supabase, so this route must never be cached or prerendered.
+export const dynamic = "force-dynamic";
 
-const nextId = () => books.reduce((max, b) => Math.max(max, b.id), 0) + 1;
+const SETUP_MESSAGE =
+  "Database not connected yet. Add SUPABASE_URL and SUPABASE_ANON_KEY, then redeploy. See README.";
+
+/** Returned when the env vars are missing, so the app shows a setup hint instead of crashing. */
+const notConfigured = () => NextResponse.json({ message: SETUP_MESSAGE }, { status: 503 });
 
 /** Validates and cleans user input. Returns an error message or the cleaned fields. */
 function parseInput(raw: unknown): { error: string } | { data: BookInput } {
@@ -28,12 +22,16 @@ function parseInput(raw: unknown): { error: string } | { data: BookInput } {
   if (!author) return { error: "Author is required." };
   if (title.length > 150 || author.length > 100) return { error: "Title or author is too long." };
 
+  const image = typeof r.image === "string" ? r.image : "";
+  // Vercel caps request bodies at ~4.5 MB; covers are resized client-side, this is the backstop.
+  if (image.length > 2_000_000) return { error: "That cover image is too large. Please pick a smaller one." };
+
   const rating = Number(r.rating ?? 0);
   return {
     data: {
       title,
       author,
-      image: typeof r.image === "string" ? r.image : "",
+      image,
       available: r.available === undefined ? true : Boolean(r.available),
       genre: typeof r.genre === "string" && r.genre.trim() ? r.genre.trim() : "Other",
       rating: Number.isFinite(rating) ? Math.min(5, Math.max(0, Math.round(rating))) : 0,
@@ -41,54 +39,101 @@ function parseInput(raw: unknown): { error: string } | { data: BookInput } {
   };
 }
 
-// GET /api/books
+// GET /api/books -> every book, oldest first
 export async function GET() {
-  return NextResponse.json(books, { status: 200 });
+  if (!isSupabaseConfigured) return notConfigured();
+  try {
+    const { data, error } = await getSupabase()
+      .from(BOOKS_TABLE)
+      .select(BOOK_COLUMNS)
+      .order("id", { ascending: true });
+
+    if (error) throw error;
+    return NextResponse.json((data ?? []) as Book[], { status: 200 });
+  } catch (err) {
+    console.error("GET /api/books failed:", err);
+    return NextResponse.json({ message: "Could not load the books." }, { status: 500 });
+  }
 }
 
-// POST /api/books
+// POST /api/books -> the created book
 export async function POST(req: Request) {
+  if (!isSupabaseConfigured) return notConfigured();
   try {
     const parsed = parseInput(await req.json());
     if ("error" in parsed) return NextResponse.json({ message: parsed.error }, { status: 400 });
 
-    const book: Book = { id: nextId(), ...parsed.data };
-    books.push(book);
-    return NextResponse.json(book, { status: 201 });
-  } catch {
+    const { data, error } = await getSupabase()
+      .from(BOOKS_TABLE)
+      .insert(parsed.data)
+      .select(BOOK_COLUMNS)
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json(data as Book, { status: 201 });
+  } catch (err) {
+    console.error("POST /api/books failed:", err);
     return NextResponse.json({ message: "Could not add the book." }, { status: 500 });
   }
 }
 
-// PUT /api/books
+// PUT /api/books -> the updated book
 export async function PUT(req: Request) {
+  if (!isSupabaseConfigured) return notConfigured();
   try {
     const body = await req.json();
     const id = Number(body?.id);
-    const existing = books.find((b) => b.id === id);
+    if (!Number.isInteger(id)) return NextResponse.json({ message: "A valid book id is required." }, { status: 400 });
+
+    const db = getSupabase();
+    const { data: existing, error: findError } = await db
+      .from(BOOKS_TABLE)
+      .select(BOOK_COLUMNS)
+      .eq("id", id)
+      .maybeSingle();
+
+    if (findError) throw findError;
     if (!existing) return NextResponse.json({ message: "Book not found." }, { status: 404 });
 
+    // Merge so a partial update (just a rating, say) keeps the other fields.
     const parsed = parseInput({ ...existing, ...body });
     if ("error" in parsed) return NextResponse.json({ message: parsed.error }, { status: 400 });
 
-    const updated: Book = { id, ...parsed.data };
-    books = books.map((b) => (b.id === id ? updated : b));
-    return NextResponse.json(updated, { status: 200 });
-  } catch {
+    const { data, error } = await db
+      .from(BOOKS_TABLE)
+      .update(parsed.data)
+      .eq("id", id)
+      .select(BOOK_COLUMNS)
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json(data as Book, { status: 200 });
+  } catch (err) {
+    console.error("PUT /api/books failed:", err);
     return NextResponse.json({ message: "Could not update the book." }, { status: 500 });
   }
 }
 
 // DELETE /api/books
 export async function DELETE(req: Request) {
+  if (!isSupabaseConfigured) return notConfigured();
   try {
     const { id } = await req.json();
-    if (!books.some((b) => b.id === Number(id))) {
-      return NextResponse.json({ message: "Book not found." }, { status: 404 });
-    }
-    books = books.filter((b) => b.id !== Number(id));
+    const bookId = Number(id);
+    if (!Number.isInteger(bookId)) return NextResponse.json({ message: "A valid book id is required." }, { status: 400 });
+
+    const { data, error } = await getSupabase()
+      .from(BOOKS_TABLE)
+      .delete()
+      .eq("id", bookId)
+      .select("id")
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) return NextResponse.json({ message: "Book not found." }, { status: 404 });
     return NextResponse.json({ message: "Book deleted." }, { status: 200 });
-  } catch {
+  } catch (err) {
+    console.error("DELETE /api/books failed:", err);
     return NextResponse.json({ message: "Could not delete the book." }, { status: 500 });
   }
 }

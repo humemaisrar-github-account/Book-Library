@@ -44,8 +44,8 @@ export default function Library() {
     setLoadError("");
     try {
       setBooks(await api<Book[]>("GET"));
-    } catch {
-      setLoadError("Could not load your books. Please try again.");
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Could not load your books. Please try again.");
     } finally {
       setLoading(false);
     }

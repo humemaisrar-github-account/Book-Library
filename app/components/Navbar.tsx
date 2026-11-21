@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FiBookOpen, FiMenu, FiX } from "react-icons/fi";
 import ThemeToggle from "./ThemeToggle";
+import UserMenu from "./UserMenu";
 
 const LINKS = [
   { href: "/", label: "Home" },
@@ -44,11 +45,13 @@ export default function Navbar() {
           ))}
           <span className="mx-2 h-5 w-px bg-stone-700" />
           <ThemeToggle />
+          <span className="ml-1"><UserMenu /></span>
         </div>
 
         {/* Mobile controls */}
-        <div className="flex items-center gap-1 sm:hidden">
+        <div className="flex items-center gap-2 sm:hidden">
           <ThemeToggle />
+          <UserMenu />
           <button
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Close menu" : "Open menu"}

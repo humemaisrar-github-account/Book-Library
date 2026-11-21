@@ -16,14 +16,6 @@ const STEPS = [
   { n: "04", title: "Rate and shortlist", body: "Give a book up to five stars, and heart the ones worth keeping close. Sort by Top rated to see your best reads first." },
 ];
 
-const STACK = [
-  { name: "Next.js", role: "App Router pages and the API routes behind them" },
-  { name: "React", role: "The interactive parts: search, filters, modals" },
-  { name: "TypeScript", role: "One shared Book type across the app and the API" },
-  { name: "Tailwind CSS", role: "The styling, including the light and dark themes" },
-  { name: "Supabase", role: "PostgreSQL database where every book is stored" },
-  { name: "Vercel", role: "Hosting for the site and the serverless API" },
-];
 
 export default function AboutPage() {
   return (
@@ -56,19 +48,14 @@ export default function AboutPage() {
 
       <section className="border-t border-stone-200 bg-white py-16 dark:border-stone-800 dark:bg-stone-900">
         <div className="mx-auto max-w-4xl px-4">
-          <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-50">What it is built with</h2>
-          <dl className="mt-8 grid gap-5 sm:grid-cols-2">
-            {STACK.map((t) => (
-              <div key={t.name} className="rounded-xl bg-stone-50 p-5 ring-1 ring-stone-200 dark:bg-stone-800 dark:ring-stone-700">
-                <dt className="font-semibold text-amber-700 dark:text-amber-400">{t.name}</dt>
-                <dd className="mt-1 text-sm text-stone-600 dark:text-stone-400">{t.role}</dd>
-              </div>
-            ))}
-          </dl>
-
-          <p className="mt-10 text-stone-600 dark:text-stone-400">
-            The books are saved in a hosted PostgreSQL database rather than in memory, so a book you add
-            is still there after a refresh, a restart, or on a different device.
+          <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-50">Your shelf is yours</h2>
+          <p className="mt-4 text-stone-600 dark:text-stone-400">
+            Sign in once and your collection follows you — the same books on your laptop, your phone,
+            anywhere you sign in. Nobody else can see or change what is on your shelf.
+          </p>
+          <p className="mt-4 text-stone-600 dark:text-stone-400">
+            Books are saved in a database rather than in your browser, so nothing is lost when you clear
+            your history or switch devices.
           </p>
 
           <Link

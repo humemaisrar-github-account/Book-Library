@@ -77,7 +77,7 @@ export default function Home() {
             Built for the way you actually read
           </h2>
           <p className="mt-4 text-stone-600 dark:text-stone-400">
-            No accounts to set up, no clutter. Just the handful of things a home library really needs.
+            No clutter, no learning curve. Just the handful of things a home library really needs.
           </p>
         </div>
 

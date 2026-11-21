@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "../lib/auth";
+import { getSessionSafe, isAuthConfigured } from "../lib/auth";
+import SetupNotice from "../components/SetupNotice";
 import Library from "../components/Library";
 import { IMAGES } from "../lib/images";
 
@@ -14,7 +15,13 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function LibraryPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const missing = [
+    !process.env.DATABASE_URL && !process.env.POSTGRES_URL ? "DATABASE_URL" : null,
+    !process.env.BETTER_AUTH_SECRET ? "BETTER_AUTH_SECRET" : null,
+  ].filter(Boolean) as string[];
+  if (!isAuthConfigured) return <SetupNotice missing={missing} />;
+
+  const session = await getSessionSafe(await headers());
   if (!session) redirect("/signin");
 
   const firstName = (session.user.name || session.user.email || "").split(/[\s@]/)[0];

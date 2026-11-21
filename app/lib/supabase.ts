@@ -1,24 +1,38 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const url = process.env.SUPABASE_URL;
-const anonKey = process.env.SUPABASE_ANON_KEY;
+/**
+ * Supabase hands out its keys under different names depending on where you copy
+ * them from: its own Next.js quickstart suggests the NEXT_PUBLIC_* pair, while
+ * the project settings page calls them the project URL and anon key. Accept all
+ * of them so the app connects whichever pair is set.
+ *
+ * Each name is written out in full on purpose: Next.js only inlines
+ * `process.env.NEXT_PUBLIC_X` when it appears literally in the source.
+ */
+const url =
+  process.env.SUPABASE_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  "";
 
-/** True when both env vars are present, so routes can fail with a clear message. */
-export const isSupabaseConfigured = Boolean(url && anonKey);
+const key =
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  "";
+
+/** True when both values are present, so routes can fail with a clear message. */
+export const isSupabaseConfigured = Boolean(url && key);
 
 let client: SupabaseClient | null = null;
 
-/**
- * Returns a server-side Supabase client, created on first use.
- * The keys are read from env vars without the NEXT_PUBLIC_ prefix,
- * so they never reach the browser.
- */
+/** Returns a server-side Supabase client, created on first use. */
 export function getSupabase(): SupabaseClient {
-  if (!url || !anonKey) {
-    throw new Error("Supabase is not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY.");
+  if (!url || !key) {
+    throw new Error("Supabase is not configured.");
   }
   if (!client) {
-    client = createClient(url, anonKey, { auth: { persistSession: false } });
+    client = createClient(url, key, { auth: { persistSession: false } });
   }
   return client;
 }

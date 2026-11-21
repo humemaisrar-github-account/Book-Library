@@ -45,7 +45,10 @@ SUPABASE_URL=https://your-project-ref.supabase.co
 SUPABASE_ANON_KEY=your-anon-public-key
 ```
 
-These names have no `NEXT_PUBLIC_` prefix on purpose, so the keys stay on the server and never ship to the browser.
+Supabase's own Next.js quickstart names the same two values
+`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+Either pair works — the app checks both. The un-prefixed names are preferred,
+because keys without `NEXT_PUBLIC_` stay on the server and never ship to the browser.
 
 ### 4. Run
 
@@ -66,7 +69,7 @@ There is no separate backend to deploy. The API lives in `app/api/books/route.ts
 which Next.js turns into a serverless function, and Supabase is already hosted for you.
 
 1. Import the repo on [Vercel](https://vercel.com/new).
-2. Add `SUPABASE_URL` and `SUPABASE_ANON_KEY` under **Settings → Environment Variables**
+2. Add the project URL and anon key under **Settings → Environment Variables**
    (tick Production, Preview and Development).
 3. Deploy. Every later push to `main` redeploys automatically.
 

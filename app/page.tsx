@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FiArrowRight, FiHeart, FiSearch, FiStar, FiRepeat, FiMoon, FiDatabase } from "react-icons/fi";
+import { IMAGES } from "./lib/images";
 
 const COVERS = [
   "/img1.jpg", "/img2.jpg", "/img.3.jpg", "/img.4.jpg", "/img5.jpg",
@@ -21,7 +22,7 @@ export default function Home() {
     <>
       {/* Hero */}
       <section className="relative isolate overflow-hidden">
-        <Image src="/book.jpg" alt="" fill priority sizes="100vw" className="object-cover" />
+        <Image src={IMAGES.hero} alt="" fill priority sizes="100vw" className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-br from-stone-950/90 via-stone-950/75 to-amber-950/70" />
         <div className="relative mx-auto max-w-6xl px-4 py-24 sm:py-32">
           <p className="mb-4 inline-block rounded-full bg-amber-500/15 px-4 py-1.5 text-sm font-medium text-amber-300 ring-1 ring-amber-400/30">
@@ -97,8 +98,9 @@ export default function Home() {
       </section>
 
       {/* Closing call to action */}
-      <section className="bg-stone-900 dark:bg-stone-900">
-        <div className="mx-auto max-w-4xl px-4 py-20 text-center">
+      <section className="relative isolate overflow-hidden bg-stone-900">
+        <Image src={IMAGES.cta} alt="" fill sizes="100vw" className="object-cover opacity-25" />
+        <div className="relative mx-auto max-w-4xl px-4 py-20 text-center">
           <h2 className="text-3xl font-bold text-white sm:text-4xl">Ready to see your shelf?</h2>
           <p className="mx-auto mt-4 max-w-lg text-stone-400">
             Open the library, add a book, and it stays there — on your laptop, your phone, wherever you sign in.

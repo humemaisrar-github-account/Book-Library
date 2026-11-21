@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import { IMAGES } from "../lib/images";
 import { FiArrowRight } from "react-icons/fi";
 
 export const metadata: Metadata = {
@@ -26,10 +28,12 @@ const STACK = [
 export default function AboutPage() {
   return (
     <>
-      <section className="bg-stone-900">
-        <div className="mx-auto max-w-4xl px-4 py-20">
+      <section className="relative isolate overflow-hidden bg-stone-900">
+        <Image src={IMAGES.about} alt="" fill priority sizes="100vw" className="object-cover opacity-40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/70 to-stone-950/40" />
+        <div className="relative mx-auto max-w-4xl px-4 py-20">
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">How it works</h1>
-          <p className="mt-5 max-w-2xl text-lg text-stone-400">
+          <p className="mt-5 max-w-2xl text-lg text-stone-300">
             Book Library is a small app for keeping track of a personal book collection —
             what you own, what you have lent out, and what was worth reading.
           </p>

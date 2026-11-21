@@ -6,7 +6,13 @@ import type { Book, BookInput } from "../../lib/types";
 export const dynamic = "force-dynamic";
 
 const SETUP_MESSAGE =
-  "Database not connected yet. Add SUPABASE_URL and SUPABASE_ANON_KEY, then redeploy. See README.";
+  "Database not connected yet. Add your Supabase project URL and anon key as environment variables, then redeploy. See README.";
+
+/** Surfaces the real Supabase message (e.g. a missing table) instead of a generic failure. */
+function describe(err: unknown, fallback: string): string {
+  const message = typeof err === "object" && err !== null && "message" in err ? String((err as { message: unknown }).message) : "";
+  return message ? `${fallback} ${message}` : fallback;
+}
 
 /** Returned when the env vars are missing, so the app shows a setup hint instead of crashing. */
 const notConfigured = () => NextResponse.json({ message: SETUP_MESSAGE }, { status: 503 });
@@ -52,7 +58,7 @@ export async function GET() {
     return NextResponse.json((data ?? []) as Book[], { status: 200 });
   } catch (err) {
     console.error("GET /api/books failed:", err);
-    return NextResponse.json({ message: "Could not load the books." }, { status: 500 });
+    return NextResponse.json({ message: describe(err, "Could not load the books.") }, { status: 500 });
   }
 }
 
@@ -73,7 +79,7 @@ export async function POST(req: Request) {
     return NextResponse.json(data as Book, { status: 201 });
   } catch (err) {
     console.error("POST /api/books failed:", err);
-    return NextResponse.json({ message: "Could not add the book." }, { status: 500 });
+    return NextResponse.json({ message: describe(err, "Could not add the book.") }, { status: 500 });
   }
 }
 
@@ -110,7 +116,7 @@ export async function PUT(req: Request) {
     return NextResponse.json(data as Book, { status: 200 });
   } catch (err) {
     console.error("PUT /api/books failed:", err);
-    return NextResponse.json({ message: "Could not update the book." }, { status: 500 });
+    return NextResponse.json({ message: describe(err, "Could not update the book.") }, { status: 500 });
   }
 }
 
@@ -134,6 +140,6 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ message: "Book deleted." }, { status: 200 });
   } catch (err) {
     console.error("DELETE /api/books failed:", err);
-    return NextResponse.json({ message: "Could not delete the book." }, { status: 500 });
+    return NextResponse.json({ message: describe(err, "Could not delete the book.") }, { status: 500 });
   }
 }

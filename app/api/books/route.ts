@@ -1,7 +1,7 @@
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { auth } from "../../lib/auth";
+import { auth } from "@clerk/nextjs/server";
 import { isDatabaseConfigured, query } from "../../lib/db";
+import { isAuthConfigured } from "../../lib/auth-config";
 import type { Book, BookInput } from "../../lib/types";
 
 // Every response depends on the signed-in user, so nothing here may be cached.
@@ -14,10 +14,15 @@ const SETUP_MESSAGE =
 // and the API keeps the number type the client expects.
 const COLUMNS = `id::int as id, title, author, image, available, genre, rating`;
 
-/** The signed-in user's id, or null when nobody is signed in. */
+/** The signed-in Clerk user's id, or null when nobody is signed in. */
 async function currentUserId(): Promise<string | null> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  return session?.user?.id ?? null;
+  if (!isAuthConfigured) return null;
+  try {
+    const { userId } = await auth();
+    return userId ?? null;
+  } catch {
+    return null;
+  }
 }
 
 const unauthorized = () =>

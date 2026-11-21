@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import { ClerkProvider } from "@clerk/nextjs";
+import { isAuthConfigured } from "./lib/auth-config";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -37,9 +39,21 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Navbar />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
+        {/* Without Clerk keys the provider throws, so the site renders without it
+            and the auth pages explain what is missing instead. */}
+        {isAuthConfigured ? (
+          <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" signInFallbackRedirectUrl="/library" signUpFallbackRedirectUrl="/library">
+            <Navbar authConfigured />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+          </ClerkProvider>
+        ) : (
+          <>
+            <Navbar authConfigured={false} />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+          </>
+        )}
       </body>
     </html>
   );

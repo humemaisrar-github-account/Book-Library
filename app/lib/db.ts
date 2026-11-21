@@ -1,9 +1,8 @@
 import { Pool } from "pg";
 
 /**
- * One Postgres pool for the whole app: Better Auth stores its tables here and
- * the books API queries the same database, so there is a single connection
- * string to configure rather than a separate set of API keys.
+ * One Postgres pool for the books API. Accounts live in Clerk, so this database
+ * holds only the books, keyed by the Clerk user id.
  *
  * Use Supabase's *transaction pooler* connection string in serverless
  * environments — a direct connection runs out of slots quickly on Vercel.

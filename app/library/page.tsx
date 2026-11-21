@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getSessionSafe, isAuthConfigured } from "../lib/auth";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import SetupNotice from "../components/SetupNotice";
+import { isAuthConfigured, missingAuthEnv } from "../lib/auth-config";
 import Library from "../components/Library";
 import { IMAGES } from "../lib/images";
 
@@ -15,16 +15,13 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function LibraryPage() {
-  const missing = [
-    !process.env.DATABASE_URL && !process.env.POSTGRES_URL ? "DATABASE_URL" : null,
-    !process.env.BETTER_AUTH_SECRET ? "BETTER_AUTH_SECRET" : null,
-  ].filter(Boolean) as string[];
-  if (!isAuthConfigured) return <SetupNotice missing={missing} />;
+  if (!isAuthConfigured) return <SetupNotice missing={missingAuthEnv()} />;
 
-  const session = await getSessionSafe(await headers());
-  if (!session) redirect("/signin");
+  const { userId } = await auth();
+  if (!userId) redirect("/sign-in");
 
-  const firstName = (session.user.name || session.user.email || "").split(/[\s@]/)[0];
+  const user = await currentUser();
+  const firstName = (user?.firstName || user?.username || user?.emailAddresses?.[0]?.emailAddress || "").split(/[\s@]/)[0];
 
   return (
     <>

@@ -41,6 +41,16 @@ function describe(err: unknown, fallback: string): string {
     return `${fallback} DATABASE_URL points at Supabase's direct connection host, which is not reachable from here. Use the Transaction pooler connection string instead (host ends in .pooler.supabase.com, port 6543).`;
   }
 
+  // The pooler expects the username to carry the project ref, as in
+  // postgres.abcdefgh. A plain "postgres" is the direct connection's username
+  // and the pooler rejects it as a password failure, which misleads.
+  if (/password authentication failed/i.test(message)) {
+    if (/for user "postgres"/.test(message)) {
+      return `${fallback} The transaction pooler expects the username to include your project ref, like postgres.yourprojectref — a plain "postgres" is rejected. Copy the Transaction pooler string again and only replace [YOUR-PASSWORD].`;
+    }
+    return `${fallback} Check the password in DATABASE_URL. If it contains @ : / ? # or %, each has to be percent-encoded, or reset the database password in Supabase and use one without them.`;
+  }
+
   return message ? `${fallback} ${message}` : fallback;
 }
 

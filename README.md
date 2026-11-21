@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📚 Book Library
+
+A clean, responsive book library app built with **Next.js 15**, **React**, **TypeScript** and **Tailwind CSS**.
+Browse your collection, borrow and return books, rate them, and keep a list of favourites.
+
+## Features
+
+- 🔎 **Live search** by title or author
+- 🏷️ **Filters** for All / Available / Borrowed / Favourites, plus a **genre** filter
+- ↕️ **Sorting**: newest, title (A–Z), author (A–Z), top rated
+- 📖 **Borrow / Return** a book with one click
+- ⭐ **Star ratings** (click the same star again to clear it)
+- ❤️ **Favourites**, saved in your browser
+- ➕ **Add / edit books** in a modal with cover upload (images are resized automatically) and validation
+- 🗑️ **Delete confirmation** so nothing disappears by accident
+- 🌙 **Dark mode** that remembers your choice
+- 📊 **Stats** for total, available, borrowed and favourite books
+- ✨ Loading skeletons, empty states, toast messages and cover fallbacks
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Other scripts: `npm run build`, `npm start`, `npm run lint`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```
+app/
+├── api/books/route.ts     # REST API: GET, POST, PUT, DELETE (with validation)
+├── components/
+│   ├── Library.tsx        # Main page logic: search, filters, sorting, CRUD
+│   ├── BookCard.tsx       # One book card
+│   ├── BookModal.tsx      # Add / edit form
+│   ├── StarRating.tsx
+│   ├── Navbar.tsx
+│   ├── ThemeToggle.tsx
+│   └── Footer.tsx
+├── lib/types.ts           # Shared types and genre list
+├── layout.tsx
+└── page.tsx
+```
 
-To learn more about Next.js, take a look at the following resources:
+## API
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Method | Endpoint     | Body                                   | Result            |
+| ------ | ------------ | -------------------------------------- | ----------------- |
+| GET    | `/api/books` | –                                      | All books         |
+| POST   | `/api/books` | `title`, `author`, `genre`, `image`, … | The created book  |
+| PUT    | `/api/books` | `id` + any fields to change            | The updated book  |
+| DELETE | `/api/books` | `id`                                   | Confirmation      |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+> **Note:** books are stored in server memory, so changes reset when the server restarts.
+> To make them permanent, replace the array in `app/api/books/route.ts` with a database such as Supabase or MongoDB.
 
-## Deploy on Vercel
+## Ideas for Next Steps
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Connect a real database for permanent storage
+- Add user login so each person has their own library
+- Add due dates and reminders for borrowed books
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+Made by Humema Israr.

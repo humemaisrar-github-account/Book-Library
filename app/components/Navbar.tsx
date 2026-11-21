@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { FiBookOpen, FiMenu, FiX } from "react-icons/fi";
 import ThemeToggle from "./ThemeToggle";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { Show, UserButton } from "@clerk/nextjs";
 
 const LINKS = [
   { href: "/", label: "Home" },
@@ -85,26 +85,27 @@ export default function Navbar({ authConfigured }: { authConfigured: boolean }) 
   );
 }
 
-/** Sign-in link when signed out, account menu when signed in. */
+/**
+ * Sign-in link when signed out, account menu when signed in.
+ * Clerk Core 3 replaced SignedIn/SignedOut with Show, and the Suspense
+ * boundary is required or the static pages fail to prerender.
+ */
 function AuthControls() {
   return (
-    <>
-      <SignedOut>
+    <Suspense fallback={<span className="h-9 w-9" aria-hidden />}>
+      <Show when="signed-out">
         <Link
           href="/sign-in"
           className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-500"
         >
           Sign in
         </Link>
-      </SignedOut>
-      <SignedIn>
+      </Show>
+      <Show when="signed-in">
         <span className="flex items-center">
-          <UserButton
-            appearance={{ elements: { avatarBox: "h-9 w-9" } }}
-            userProfileProps={{ appearance: { elements: { rootBox: "w-full" } } }}
-          />
+          <UserButton appearance={{ elements: { avatarBox: "h-9 w-9" } }} />
         </span>
-      </SignedIn>
-    </>
+      </Show>
+    </Suspense>
   );
 }

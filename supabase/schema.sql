@@ -30,6 +30,5 @@ drop policy if exists "Public insert access" on public.books;
 drop policy if exists "Public update access" on public.books;
 drop policy if exists "Public delete access" on public.books;
 
--- If an earlier version of this project created Better Auth tables, they are no
--- longer used. Uncomment to remove them:
--- drop table if exists public.session, public.account, public.verification, public."user" cascade;
+-- Already ran an earlier version of this file, the one that created the Better
+-- Auth tables? Run supabase/migrate-to-clerk.sql instead of editing by hand.

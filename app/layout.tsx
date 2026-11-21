@@ -16,8 +16,11 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Book Library",
-  description: "Search, borrow, rate and organise your favourite books.",
+  title: {
+    default: "Book Library",
+    template: "%s | Book Library",
+  },
+  description: "Keep track of the books you own, lend and love. Search, borrow, rate and organise your collection.",
 };
 
 // Runs before first paint so the saved theme is applied without a flash.

@@ -30,17 +30,30 @@ export default function BookCard({
 
   return (
     <li className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-stone-200 transition hover:-translate-y-1 hover:shadow-xl dark:bg-stone-800 dark:ring-stone-700">
-      <div className="relative h-72 w-full bg-stone-200 dark:bg-stone-700">
+      <div className="relative h-72 w-full overflow-hidden bg-stone-200 dark:bg-stone-700">
         {hasImage ? (
-          <Image
-            src={book.image}
-            alt={`Cover of ${book.title}`}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            unoptimized={book.image.startsWith("data:")}
-            onError={() => setImgFailed(true)}
-            className="object-cover"
-          />
+          <>
+            {/* Blurred copy fills the frame so small covers never stretch. */}
+            <Image
+              src={book.image}
+              alt=""
+              aria-hidden
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              unoptimized={book.image.startsWith("data:")}
+              className="scale-110 object-cover blur-xl saturate-150"
+            />
+            <div className="absolute inset-0 bg-stone-900/25" />
+            <Image
+              src={book.image}
+              alt={`Cover of ${book.title}`}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              unoptimized={book.image.startsWith("data:")}
+              onError={() => setImgFailed(true)}
+              className="relative object-contain p-5 drop-shadow-xl transition duration-300 group-hover:scale-105"
+            />
+          </>
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-500 to-stone-700 p-4 text-center text-2xl font-bold text-white">
             {book.title}

@@ -29,7 +29,7 @@ export default function Footer() {
           <ul className="mt-3 space-y-2 text-sm text-stone-400">
             <li>Next.js &amp; React</li>
             <li>Tailwind CSS</li>
-            <li>Supabase</li>
+            <li>Clerk &amp; Supabase</li>
           </ul>
           <a
             href="https://github.com/humemaisrar-github-account/Book-Library"

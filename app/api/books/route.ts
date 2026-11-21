@@ -34,6 +34,13 @@ function describe(err: unknown, fallback: string): string {
     typeof err === "object" && err !== null && "message" in err
       ? String((err as { message: unknown }).message)
       : "";
+
+  // Supabase's direct host only resolves over IPv6, which serverless platforms
+  // generally cannot reach. The raw DNS error gives no hint about the fix.
+  if (/ENOTFOUND|EAI_AGAIN/.test(message) && /db\.[a-z0-9]+\.supabase\.co/.test(message)) {
+    return `${fallback} DATABASE_URL points at Supabase's direct connection host, which is not reachable from here. Use the Transaction pooler connection string instead (host ends in .pooler.supabase.com, port 6543).`;
+  }
+
   return message ? `${fallback} ${message}` : fallback;
 }
 
